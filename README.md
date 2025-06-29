@@ -34,7 +34,7 @@ A full-stack weather application that allows users to:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/Weather_app_full_stack_react_and_flask.git
+git clone https://github.com/Cabdulrahman/Weather_app_full_stack_react_and_flask.git
 cd Weather_app_full_stack_react_and_flask
 
 ### Backend setup
