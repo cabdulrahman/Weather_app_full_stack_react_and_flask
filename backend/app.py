@@ -13,7 +13,7 @@ from Models import db, User, City, FavoriteCity
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app,supports_credentials=True, origins=["http://localhost:5173"])
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///weather.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -103,33 +103,6 @@ def get_favorites():
     favorites = [f.to_dict() for f in user.favorites]
     return jsonify(favorites), 200
 
-
-@app.route('/favorites', methods=["POST"])
-@jwt_required()
-def add_favorite():
-    user_id = get_jwt_identity()
-    data = request.get_json()
-    city_name = data.get("city")
-
-    if not city_name:
-        return jsonify({"error": "City name required"}), 400
-
-    city = City.query.filter_by(name=city_name).first()
-    if not city:
-        city = City(name=city_name)
-        db.session.add(city)
-        db.session.commit()
-
-    existing = FavoriteCity.query.filter_by(user_id=user_id, city_id=city.id).first()
-    if existing:
-        return jsonify({"error": "City already in favorites"}), 409
-
-    favorite = FavoriteCity(user_id=user_id, city_id=city.id)
-    db.session.add(favorite)
-    db.session.commit()
-
-    return jsonify(favorite.to_dict()), 201
-
 @app.route('/favorites/<int:id>', methods=["DELETE"])
 @jwt_required()
 def delete_favorite(id):
@@ -156,6 +129,36 @@ def update_favorite(id):
 
    
     return jsonify(favorite.to_dict()), 200
+@app.route('/favorites', methods=["POST"])
+@jwt_required()
+def add_favorite():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    city_name = data.get("city_name")
+
+    if not city_name:
+        return jsonify({"error": "City name required"}), 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    city = City.query.filter_by(name=city_name).first()
+    if not city:
+        city = City(name=city_name)
+        db.session.add(city)
+        db.session.commit()
+
+    #
+    existing_favorite = FavoriteCity.query.filter_by(user_id=user.id, city_id=city.id).first()
+    if existing_favorite:
+        return jsonify({"error": "City already favorited"}), 409
+
+    favorite = FavoriteCity(user_id=user.id, city_id=city.id)
+    db.session.add(favorite)
+    db.session.commit()
+
+    return jsonify({"message": "City added to favorites"}), 201
 
 
 if __name__ == '__main__':

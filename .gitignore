@@ -1,0 +1,11 @@
+# Python
+backend/venv/
+__pycache__/
+
+# Node
+frontend/my-weather-app/node_modules/
+frontend/my-weather-app/dist/
+
+# Others
+.env
+.DS_Store
